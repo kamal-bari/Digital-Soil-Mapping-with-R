@@ -1,10 +1,10 @@
 # Digital-Soil-Mapping-with-R
 Course Contents
-This training-workshop will covered following lessons:
+This training-workshop covers following lessons:
 
-Getting Started Digital Soil Mapping with R
+1. Getting Started Digital Soil Mapping with R
 
-Basic R
+2. Basic R
 
 2.1. Download and Install R and R-Studio
 
@@ -12,7 +12,7 @@ Basic R
 
 2.3. Data Import-Export into/from R
 
-Data Wrangling with R
+3. Data Wrangling with R
 
 3.1.Introduction to Data Wragling
 
@@ -20,7 +20,7 @@ Data Wrangling with R
 
 3.3.Data Wrangling with janitor
 
-Introduction to Data Exploration and Visualization
+4. Introduction to Data Exploration and Visualization
 
 4.1.Introduction to Data Exploration and Visualization
 
@@ -28,7 +28,7 @@ Introduction to Data Exploration and Visualization
 
 4.3.Data Exploration with dlookr
 
-Regression Analysis
+5. Regression Analysis
 
 5.1.Introduction to Regression Analysis
 
@@ -40,17 +40,17 @@ Regression Analysis
 
 5.5.Regression Model Evaluation
 
-Multivariate Statistic
+6. Multivariate Statistic
 
-Machine Learning
+7. Machine Learning
 
-Spatial Data Processing
+8. Spatial Data Processing
 
-Digital Terrain Modeling
+9. Digital Terrain Modeling
 
-Remote Sensing
+10. Remote Sensing
 
-Spatial Interpolation
+11. Spatial Interpolation
 
 # Mentor:
 Zia U Ahmed, PhD
