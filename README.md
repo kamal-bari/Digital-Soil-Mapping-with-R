@@ -1,4 +1,4 @@
-# Digital-Soil-Mapping-with-R
+# Digital-Soil-Mapping-with-R <https://zia207.quarto.pub/digital-soil-mapping/>
 ## Course Contents
 This training-workshop covers following lessons:
 
