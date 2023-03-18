@@ -1,0 +1,308 @@
+---
+title: "Homework_01"
+author: "Mustafa Kamal Shahadat, Senior Scientific Officer, Bangladesh Agricultural Research Institute, On-Farm Research Division, Daulatpur, Khulna "
+date: "2023-03-17"
+output: html_document
+---
+
+### Load 'tidyverse' package
+```{r message=TRUE, warning=TRUE}
+library(tidyverse)
+```
+
+### Read data files
+```{r}
+rice <- read.csv("bd_rice_production.csv")
+head(rice)
+district <- read.csv("bd_district.csv")
+head(district)
+division <- read.csv("bd_division.csv")
+head(division)
+raj_soil <- read.csv("raj_soil_data.csv")
+head(raj_soil)
+bd_soil <- read.csv("bd_soil_data_raw.csv")
+head(bd_soil)
+```
+
+## Tasks for Homework_01
+
+### 1: joining objects 'rice' and 'district' using inner_join() function of 'dplyr' package 
+
+```{r}
+bd_rice = dplyr::inner_join(rice, district)
+```
+### 2: joining objects 'bd_rice'and 'division' using inner_join() function of 'dplyr' package 
+```{r}
+bd_rice = dplyr::inner_join(bd_rice, division)
+```
+### 3: Organize column as (DIVISION_ID, DIVISION_NAME, DISTRICT_ID, DISTRICT_NAME, SEASON, YEAR, MT using dplyr::relocate()
+```{r}
+bd_rice <-dplyr::relocate(bd_rice, DIVISION_PCODE, DIVISION_NAME, DISTRICT_ID, DISTRICT_NAME, SEASON, YEAR, MT,
+                          .after =  DIVISION_PCODE) 
+head(bd_rice)
+```
+
+### 4.	Rename “DISTRICT_ID” to “DISTRICT_PCODE” using dplyr::rename()
+```{r}
+bd_rice <- bd_rice %>% 
+  dplyr::rename("DISTRICT_PCODE" = "DISTRICT_ID")
+names(bd_rice)
+```
+### 5.	Run all the above code using pipe function in a single line and create a data frame name df.rice.csv
+```{r}
+df.rice.csv = dplyr::inner_join(rice, district) %>% 
+          dplyr::inner_join(division) %>%
+          dplyr::relocate(DIVISION_PCODE, DIVISION_NAME, DISTRICT_ID, DISTRICT_NAME, SEASON, YEAR, MT,
+                    .after =  DIVISION_PCODE) %>%
+          dplyr::rename("DISTRICT_PCODE" = "DISTRICT_ID") %>%
+        glimpse()
+```
+### 6.	Form df.rice data that you have created before, use select() function to create a data frame only with DISTRICT_NAME, YEAR and MT
+```{r}
+df.dist <- df.rice.csv %>% 
+           dplyr::select(DISTRICT_NAME, YEAR,  MT,) %>%
+           glimpse()
+```
+### 7.	Filter out the data from Rajshahi division using dplyr::filter()
+```{r}
+df.raj<-df.rice.csv %>% 
+              dplyr::filter(DIVISION_NAME == "Rajshahi")
+levels(as.factor(df.raj$DISTRICT_NAME))
+```
+### 8.	Filter (Filtering by multiple criteria) all district in Rajshahi and Dhaka divisions using dplyr::filter()
+```{r}
+df.div<- df.rice.csv %>% 
+            dplyr::filter(DIVISION_NAME %in%c("Rajshahi", "Dhaka")) 
+levels(as.factor(df.div$DISTRICT_NAME))
+```
+### 9.	Use | or OR in the logical condition in filter function, select data from any of the two divisions.
+```{r}
+df.div.01<- df.rice.csv %>% 
+                    dplyr::filter(DIVISION_NAME == "Rajshahi" | DIVISION_NAME == "Dhaka")
+levels(as.factor(df.div.01$DISTRICT_NAME))
+```
+### 10.	Apply filter create a files for the Rajshai Division only with Bogra District.
+```{r}
+df.raj.bogra<-df.rice.csv %>% 
+         dplyr::filter(DIVISION_NAME == "Rajshahi" & DISTRICT_NAME == "Bogra")
+tail(df.raj.bogra)
+```
+### 11.	Select districts where rice production (MT) is greater than the country average
+```{r}
+mean.prod <- df.rice.csv %>% 
+              dplyr::filter(MT > mean(MT, na.rm = TRUE))
+levels(as.factor(mean.prod$DISTRICT_NAME))
+```
+### 12.	Use & to select district where MT is greater than the country average of for the year 2018-2019
+```{r}
+mean.prod.2018.19 <- df.rice.csv %>% 
+  dplyr::filter(MT > mean(MT, na.rm = TRUE) & YEAR ==2018-19)
+levels(as.factor(mean.prod.2018.19$DISTRICT_NAME))
+```
+### 13.	Select districts starting with “P”
+```{r}
+dist.p <- df.rice.csv %>% 
+          dplyr::filter(grepl("^P", DISTRICT_NAME))
+levels(as.factor(dist.p$DISTRICT_NAME))
+```
+### 14.	Use raj_soil data to calculate mean of SOM using dplyr::summarise_at() function
+
+```{r}
+#Checking column names in the data file
+colnames(raj_soil)
+```
+```{r}
+# Extracting mean of SOM from raj_soil
+raj_soil %>%
+  dplyr::summarise_at("SOM", mean, na.rm = TRUE)%>%
+  glimpse()
+```
+### 15.	Use bd_soil data to calculate mean of SOM and NDVI using dplyr::summarise_at() function
+
+```{r}
+raj_soil %>%
+    dplyr::summarise_at(c("SOM", "NDVI"), mean, na.rm = TRUE)
+```
+### 16.	Use dplyr::summarise_if() to calculate mean() to the numeric columns
+```{r}
+raj_soil %>%
+    dplyr::summarise_if(is.numeric, mean, na.rm = TRUE)
+```
+### 17.	Select numerical columns (pH,SOM, DEM, NDVI, NDFI) and then apply dplyr::summarise_all()*to calculate mean of these variables
+```{r}
+raj_soil %>%
+    # First select  numerical columns
+    dplyr::select(pH, SOM, DEM, NDFI, NDVI) %>%
+    # get mean of all these variables
+    dplyr::summarise_all(mean, na.rm = TRUE)
+```
+
+### 18.	Create a new column (MT_1000) in df.rice dataframe dividing MT column by 1000 using mutate()
+```{r}
+df.rice.csv %>%
+    dplyr::mutate(MT_1000 = MT / 10000) %>%
+    glimpse()
+```
+### 19.	Apply the group_by(), summarize()** and mutate() functions with pipe to calculate mean of rice production in 1000 MT by division for the year 2018-2019
+```{r}
+df.rice.csv %>% 
+          dplyr::filter(YEAR=="2018-19") %>%
+          dplyr::group_by(DIVISION_NAME) %>%
+          dplyr::summarize(Prod_MT = mean(MT)) %>%
+          dplyr::mutate(Prod_1000_MT = Prod_MT / 1000)  
+```
+
+```{r}
+colnames(df.rice.csv)
+```
+
+
+### 20.	Use df.rice data to create a wider data frame using tidyr::pivot_wider() function
+```{r}
+rice.wider = df.rice.csv  %>%
+  dplyr::select (DIVISION_NAME, DISTRICT_NAME, SEASON, YEAR, MT) %>%
+  tidyr::pivot_wider(names_from = YEAR, values_from = MT) %>%
+  glimpse()
+```
+### 21.	Convert rice.wider data to a longer format use tidyr::pivot_longer()
+```{r}
+names(rice.wider)
+```
+```{r}
+rice.longer<- rice.wider %>% 
+  tidyr::pivot_longer(cols= c("2012-2013", "2013-2014", "2014-2015", "2015-2016", "2016-2017", "2017-2018", "2018-2019"),
+                      names_to = "YEAR", # column need to be wider
+                      values_to = "MT") # data
+head(rice.longer)
+```
+### 22.	Clean bd_soil_data_raw.csv and save as bd_soil_data.final.csv. Follow the steps you have learned from “Cleaning a messy data” section.
+```{r}
+# Looking at the column names
+glimpse(bd_soil)
+```
+
+```{r}
+# Create a file with limited number of variables using select functions and rename them
+mf.geo <- bd_soil %>%
+      select(x,y,DIVISION_NAME,DISTRICT_NAME, UPAZILA_NAMAE,UNION_NAME, Soil_PH,Soil_SOM,Soil_K, Soil_Ca, MG, N, P, S, B, CU, FE, MN, ZN) %>%
+      rename("PH"=Soil_PH,
+             "SOM" =Soil_SOM,
+             "K" = Soil_K,
+             "Ca" = Soil_Ca)%>% 
+  glimpse()
+```
+```{r}
+# Filter the data where records have N.D. values 
+mf.geo<- mf.geo %>% 
+        filter(B != "N.D.")
+```
+
+```{r}
+# convert all N.D. values to empty string
+mf.geo[mf.geo=="N.D."]<- ""
+```
+
+```{r}
+# Here detection limits of K, Ca, N, P, S, CU, FE, and Mn are 0.1, 0.1, 0.1, 1.0, 0.05, 0.1, 1.0 and 0.1 mg/kg, respectively. We will replace the values below detection limits by half of detection limits of these nutrients. Before that we have to remove “<” and convert the all to .
+mf.geo <- mf.geo %>%
+  mutate_at(c("K", "Ca", "N", "P", "S", "CU", "FE", "MN"), str_replace, "<", "")%>%
+  mutate_at(c("K", "Ca", "N", "P", "S", "CU", "FE", "MN"), as.numeric) %>% glimpse()
+```
+```{r}
+# replace values below detection limits
+mf.geo["K"][mf.geo["K"] == 0.1] <- 0.05
+mf.geo["Ca"][mf.geo["Ca"] == 0.1] <- 0.05
+mf.geo["N"][mf.geo["N"] == 0.1] <- 0.05
+mf.geo["P"][mf.geo["P"] == 1.0] <- 0.5
+mf.geo["S"][mf.geo["S"] == 0.05] <- 0.025
+mf.geo["CU"][mf.geo["CU"] == 0.1] <- 0.05
+mf.geo["FE"][mf.geo["FE"] == 1.0] <- 0.5
+mf.geo["MN"][mf.geo["MN"] == 0.1] <- 0.05
+```
+### Checking missing values of the data
+```{r}
+# counting unique, missing, and median values
+K<- mf.geo %>% summarise(Length = length(K),
+                 na = sum(is.na(K)),
+                 Min = min(K, na.rm = TRUE),
+                 Max =max(K, na.rm = TRUE))
+
+Ca<- mf.geo %>% summarise(Length = length(Ca),
+                 na = sum(is.na(Ca)),
+                 Min = min(Ca, na.rm = TRUE),
+                 Max =max(Ca, na.rm = TRUE))
+
+N<- mf.geo %>% summarise(Length = length(N),
+                 na = sum(is.na(N)),
+                 Min = min(N, na.rm = TRUE),
+                 Max =max(N, na.rm = TRUE))
+
+P<- mf.geo %>% summarise(Length = length(P),
+                 na = sum(is.na(P)),
+                 Min = min(P, na.rm = TRUE),
+                 Max =max(P, na.rm = TRUE))
+
+S<- mf.geo %>% summarise(Length = length(S),
+                 na = sum(is.na(S)),
+                 Min = min(S, na.rm = TRUE),
+                 Max =max(S, na.rm = TRUE))
+
+CU<- mf.geo %>% summarise(Length = length(CU),
+                 na = sum(is.na(CU)),
+                 Min = min(CU, na.rm = TRUE),
+                 Max =max(CU, na.rm = TRUE))
+
+FE<- mf.geo %>% summarise(Length = length(FE),
+                 na = sum(is.na(FE)),
+                 Min = min(FE, na.rm = TRUE),
+                 Max =max(FE, na.rm = TRUE))
+
+MN<- mf.geo %>% summarise(Length = length(MN),
+                 na = sum(is.na(MN)),
+                 Min = min(MN, na.rm = TRUE),
+                 Max =max(MN, na.rm = TRUE),
+                 )
+
+#bind the data
+geo.sum<- bind_rows(K, Ca, N, P, S, CU, FE, MN)
+
+#add.row.names
+row.names(geo.sum) <- c("K", "Ca", "N", "P", "S", "CU", "FE", "MN")
+```
+
+```{r}
+head(geo.sum)
+```
+
+```{r}
+# Omitting missing values
+newdata <- na.omit(mf.geo)
+glimpse(newdata)
+```
+
+
+
+```{r}
+# Data imputation with mean 
+mf.geo.new<-mf.geo %>% mutate_at(vars(K, Ca, N, P, CU, FE, MN),~ifelse(is.na(.x), mean(.x, na.rm = TRUE), .x)) %>% glimpse()
+```
+
+```{r}
+# Checking mission values
+mf.geo.new %>%summarise(sum(is.na(K)))
+```
+```{r}
+# save clean data
+write_csv(mf.geo.new,"bd_soil_data.final.csv" )
+```
+
+
+
+
+
+
+
+
+
+
+

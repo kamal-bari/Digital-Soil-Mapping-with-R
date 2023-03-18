@@ -1,0 +1,120 @@
+---
+title: "Homework_02: Data wrangling"
+author: "Mustafa Kamal Shahadat"
+date: "2023-03-18"
+output: html_document
+---
+
+#### Required packages
+```{r}
+library(tidyverse)
+library(janitor)
+```
+#### Load data from directory
+```{r}
+getwd()
+arsenic <- read.csv("bd_arsenic_data_raw.csv")
+head(arsenic)
+```
+
+
+### Tasks
+1. Use janitor::row_to_names() remove text from column heading
+2. Remove empty rows and columns using janitor::remove_empty()
+3. Clean column names using janitor::clean_names()
+4. Use as.numeric and as.factor arguments in dplyr::mutate_at() function to convert ‘chr’ columns to numeric and factors accordingly
+5. Find duplicate records and remove them
+6. Run all above functions with pipe.
+
+
+```{r}
+## Create a data folder
+dataFolder<-"L:\\Training\\Digital Soil Mapping Training (BARC 17-18 Jan 2023)\\DSM_On-line Training 27 Feb to 13 June 2023\\Data\\Bangladesh\\"
+
+# Loading data from data folder
+df<-read_csv(paste0(dataFolder,"bd_arsenic_data_raw.csv")) %>%
+  glimpse()
+#head(df)
+```
+
+
+#### 1.	Use janitor::row_to_names() remove text from column heading
+```{r}
+df.01 = df %>% 
+  janitor::row_to_names(1, remove_row = TRUE, remove_rows_above = TRUE) %>%
+  glimpse()
+```
+
+#### 2.	Remove empty rows and columns using janitor::remove_empty()
+```{r}
+df.02 = df.01 %>% 
+  janitor::remove_empty() %>%
+  glimpse()
+```
+#### 3.	Clean column names using janitor::clean_names()
+```{r}
+df.03 = df.02 %>%
+  janitor::clean_names() %>%
+  glimpse()
+```
+```{r}
+colnames(df.03)
+```
+
+#### 4.	Use as.numeric and as.factor arguments in dplyr::mutate_at() function to convert ‘chr’ columns to numeric and factors accordingly
+```{r}
+df.04= df.03 %>%
+     dplyr::mutate_at(5:19, as.numeric) %>%
+     dplyr::mutate_at(2:4, as.factor) %>%
+     glimpse()
+```
+#### 5.	Find duplicate records and remove them
+```{r}
+df.04 %>% janitor::get_dupes(id)
+```
+
+```{r}
+#  check the duplicate records in the this data
+df.05= df.04 %>% 
+     dplyr::distinct(id,.keep_all = TRUE) %>%
+     glimpse()
+```
+
+
+
+
+#### 6.	Run all above functions with pipe.
+```{r}
+df_clean = df %>% 
+  janitor::row_to_names(1, remove_row = TRUE, remove_rows_above = TRUE) %>%
+  janitor::remove_empty() %>%
+  janitor::clean_names() %>%
+  dplyr::mutate_at(5:19, as.numeric) %>%
+  dplyr::mutate_at(2:4, as.factor) %>%
+  dplyr::distinct(id,.keep_all = TRUE) %>%
+     glimpse()
+```
+
+```{r}
+# save clean data
+write_csv(df_clean,"bd_arsenic_data_final.csv" )
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
