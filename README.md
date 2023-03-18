@@ -1,5 +1,5 @@
 # Digital-Soil-Mapping-with-R
-@@ Course Contents @@
+## Course Contents
 This training-workshop covers following lessons:
 
 1. Getting Started Digital Soil Mapping with R
