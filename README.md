@@ -30,6 +30,6 @@ This training-workshop covers following lessons:
 
 # Mentor:
 **Zia U Ahmed, PhD**
-<br> - Research Associate Professor (Data & Visualization)
-<br> - RENEW (Research and Education in eNergy, Environment and Water) Institute
-<br> - University at Buffalo
+<br> Research Associate Professor (Data & Visualization)
+<br> RENEW (Research and Education in eNergy, Environment and Water) Institute
+<br> University at Buffalo
