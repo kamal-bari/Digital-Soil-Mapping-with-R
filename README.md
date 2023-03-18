@@ -1,5 +1,5 @@
 # Digital-Soil-Mapping-with-R
-![#1589F0](Course Contents) `#1589F0`
+![#1589F0] Course Contents
 This training-workshop covers following lessons:
 
 1. Getting Started Digital Soil Mapping with R
