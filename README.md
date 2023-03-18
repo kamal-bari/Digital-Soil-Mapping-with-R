@@ -9,8 +9,8 @@ This training-workshop covers following lessons:
 <br> 2.3. Data Import-Export into/from R
 3. Data Wrangling with R
 <br> 3.1.Introduction to Data Wragling
-<br> 3.2.Data Wrangling with dplyr and tidyr <file:///L:/Training/Digital%20Soil%20Mapping%20Training%20(BARC%2017-18%20Jan%202023)/DSM_On-line%20Training%2027%20Feb%20to%2013%20June%202023/Homework/Homework_01.html>
-<br> 3.3.Data Wrangling with janitor <file:///L:/Training/Digital%20Soil%20Mapping%20Training%20(BARC%2017-18%20Jan%202023)/DSM_On-line%20Training%2027%20Feb%20to%2013%20June%202023/Homework/Homework_02.html>
+<br> 3.2.Data Wrangling with dplyr and tidyr 
+<br> 3.3.Data Wrangling with janitor 
 4. Introduction to Data Exploration and Visualization
 <br) 4.1.Introduction to Data Exploration and Visualization
 <br> 4.2. Basic Data Exploration and Visualization
