@@ -12,7 +12,7 @@ This training-workshop covers following lessons:
 <br> 3.2.Data Wrangling with dplyr and tidyr 
 <br> 3.3.Data Wrangling with janitor 
 4. Introduction to Data Exploration and Visualization
-<br) 4.1.Introduction to Data Exploration and Visualization
+<br> 4.1.Introduction to Data Exploration and Visualization
 <br> 4.2. Basic Data Exploration and Visualization
 <br> 4.3.Data Exploration with dlookr
 5. Regression Analysis
