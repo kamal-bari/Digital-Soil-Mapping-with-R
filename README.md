@@ -1,5 +1,5 @@
 # Digital-Soil-Mapping-with-R
-<font color="green"> Course Contents </font>
+![#1589F0](Course Contents) `#1589F0`
 This training-workshop covers following lessons:
 
 1. Getting Started Digital Soil Mapping with R
