@@ -4,9 +4,9 @@ This training-workshop covers following lessons:
 
 1. Getting Started Digital Soil Mapping with R
 2. Basic R
-  2.1. Download and Install R and R-Studio
-  2.2. Introduction to use R
-  2.3. Data Import-Export into/from R
+- 2.1. Download and Install R and R-Studio
+- 2.2. Introduction to use R
+- 2.3. Data Import-Export into/from R
 3. Data Wrangling with R
   3.1.Introduction to Data Wragling
   3.2.Data Wrangling with dplyr and tidyr
