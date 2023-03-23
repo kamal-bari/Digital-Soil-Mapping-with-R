@@ -1,0 +1,209 @@
+---
+title: "Homework_04"
+author: "Mustafa Kamal Shahadat"
+date: "2023-03-23"
+output: html_document
+---
+Loading Required packages
+```{r}
+library(tidyverse)
+library(dlookr)
+library(flextable)
+library(janitor)
+```
+Loading data file
+```{r}
+# mf<-read_csv("bd_arsenic_data_raw.csv")
+# Load data
+mf<-read.csv(paste0("bd_arsenic_data_raw.csv"), header=TRUE)
+```
+
+### Task
+1. Use dlookr::diagnose() function of dlookr package to do Data Quality Diagnosis all variables
+
+Before moving to quality checking we need to do some pre-processing the data
+```{r}
+#deleting first row of the data table since it contains data description
+mf.01 = mf %>% 
+  janitor::row_to_names(1, remove_row = TRUE, remove_rows_above = TRUE) %>% 
+  glimpse()
+```
+```{r}
+#Removing empty cells
+mf.02 = mf.01 %>% 
+  janitor::remove_empty() %>%
+  glimpse()
+```
+```{r}
+#Cleaning variable names
+mf.03 = mf.02 %>%
+  janitor::clean_names() %>%
+  glimpse()
+```
+```{r}
+# Renaming variables for convenience
+mf.04 <- mf.03 %>% 
+        dplyr::rename("GAs" = "grain_as", "StAs" = "straw_as", "WAs" = "w_as", "SAs" = "s_as", "SPAs" = "sp_as", "SAoAs" = "sao_as")
+names(mf.04)
+```
+```{r}
+# Looking at the data structure
+str(mf.04)
+```
+```{r}
+# Checking whether we are working with data frame
+is.data.frame(mf.04)
+```
+```{r}
+# Changing character values to numeric values
+mf.04 <- mf.04%>%
+      dplyr::mutate_at(c("GAs", "StAs", "WAs", 'SAs', "SPAs", "SAoAs"), as.numeric)%>%
+  glimpse()
+```
+```{r}
+# Checking data quality with dlookr
+dlookr::diagnose(mf.04)%>%
+  flextable() 
+```
+
+2. Use dlookr::diagnose_numeric(), diagnoses numeric such as GAs,StAs, WAs, SAs, SPAs,SAoAs and SAoFe
+```{r}
+# First select  numerical columns
+mf.04 %>% 
+  dplyr::select(GAs, StAs, WAs, SAs, SPAs, SAoAs) %>%
+# then diagnose them
+  dlookr::diagnose_numeric()%>% 
+  flextable()
+```
+```{r}
+# Checking the variable names of the data frame
+names(mf.04)
+```
+
+
+3. Use dlookr::diagnose_category() to diagnoses the categorical variables (Land_type and variety) of a data frame.
+```{r}
+mf.04 %>% 
+# Select categorical variables
+  dplyr::select(variety, land_type, year) %>%
+# then diagnose them
+  dlookr::diagnose_category()%>% 
+  flextable()
+```
+
+
+4. Use dlookr::diagnose_outlier() to diagnosis outlier of GAs, StAs, WAs, and SAs.
+```{r}
+mf.04 %>% dlookr::diagnose_outlier(GAs, StAs, WAs, SAs, SPAs, SAoAs)
+```
+
+
+5. Use dlookr::plot_outlier() to visualizes outliers of SAs
+```{r}
+mf.04 %>%
+  dlookr::plot_outlier(dlookr::diagnose_outlier(mf.04,SAs) %>% 
+                 dplyr::filter(outliers_ratio >= 0.5) %>% 
+                 dplyr::select(variables) %>% 
+                 unlist())
+```
+
+
+6. Perform a normality test on multiple numerical data (such as GAs,StAs, WAs,SAs, SPAs,SAoAs and SAoFe) using dlookr::normality() function.
+```{r}
+mf.04 %>% 
+  dplyr::select(GAs, StAs, WAs, SAs, SPAs, SAoAs) %>%
+  dlookr::normality() %>%
+  # sort variables that do not follow a normal distribution in order of p_value:
+  dplyr::filter(p_value <= 0.01) %>% 
+  dplyr::arrange(abs(p_value)) %>%
+  flextable()
+```
+
+
+7. Use dlookr::normality() and dplyr::group_by() check normality of rice garin As (GAs) in different rice varieties.
+```{r}
+mf.04 %>% 
+  dplyr::group_by(variety) %>%
+  dlookr::normality(GAs) %>%
+  dplyr:: arrange(desc(p_value)) %>%
+  flextable()
+```
+
+
+8. Plot histogram and QQ-plot of SAs and histogram and square root transformed SAs using dlookr::plot_normality() function
+```{r}
+mf.04 %>% dlookr::plot_normality(SAs)
+```
+
+
+9. Create a descriptive statistics table for GAs, StAs, Soil, WAs, PAs using dlookr::describe() and flextable() functions
+```{r}
+# First select  numerical columns
+des.stata<-mf.04 %>% 
+  dplyr::select(GAs, StAs, WAs, SAs, SPAs, SAoAs) %>%
+ # then descrive them
+  dlookr::describe()
+flextable(des.stata)
+```
+
+
+10. Use dlookr::describe() and dplyr::group_by() functions calculate descriptive testatrices of SAs, SPAs, SAoAs and SAoFe in different landtypes
+```{r}
+mf.04 %>%
+  group_by(land_type) %>% 
+  dlookr::describe(GAs, StAs, WAs, SAs, SPAs, SAoAs) %>%
+  flextable()
+```
+
+
+11. Calculates the correlation coefficient of all combinations of WAs, WFe, WP, WEc, SEc, SAs, SPAs, SAoAs and SAoFe and plot them using dlookr::correlate() and plot() functions.
+```{r}
+# First select  numerical columns
+mf.04 %>% 
+  dplyr::select(GAs, StAs, WAs, SAs, SPAs, SAoAs) %>%
+# then diagnose them
+  dlookr::correlate()%>% 
+  flextable()
+```
+
+
+12. Calculates the correlation coefficients in two landtypes: use dlookr::correlate() and dplyr::group_by()
+```{r}
+mf.04 %>% 
+  dplyr::select(GAs, StAs, WAs, SAs, SPAs, SAoAs) %>%
+# then diagnose them
+  dlookr::correlate()%>% 
+  plot()
+```
+```{r}
+mf.04 %>% 
+  group_by(land_type) %>%
+  dplyr::select(GAs, StAs, WAs, SAs, SPAs, SAoAs) %>%
+# then diagnose them
+  dlookr::correlate()%>% 
+  plot()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

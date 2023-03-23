@@ -1,0 +1,536 @@
+---
+title: "Homework_03"
+author: "Mustafa Kamal Shahadat"
+date: "2023-03-18"
+output: html_document
+---
+### Load required packages
+```{r}
+library(plyr) # Note: load 'plyr' before 'dplyr'
+library(dplyr)
+library(tidyverse)
+library(car)
+library(carData)
+library(nortest)
+library(outliers)
+library(report)
+library(RColorBrewer)
+library(ggstatsplot)
+library(gtsummary)
+library(ggExtra)
+library(gridExtra)
+library(xtable)
+library(flextable)
+```
+```{r}
+#install.packages("tidyverse", dependencies = TRUE)
+#install.packages("car", dependencies = TRUE)
+#install.packages("nortest", dependencies = TRUE)
+#install.packages("outliers", dependencies = TRUE)
+#install.packages("plyr", dependencies = TRUE)
+#install.packages("report", dependencies = TRUE)
+#install.packages("RColorBrewer", dependencies = TRUE)
+#install.packages("ggstatsplot", dependencies = TRUE)
+#install.packages("gtsummary", dependencies = TRUE)
+#install.packages("ggExtra", dependencies = TRUE)
+#install.packages("gridExtra", dependencies = TRUE)
+#install.packages("xtable", dependencies = TRUE)
+#install.packages("flextable", dependencies = TRUE)
+```
+
+```{r}
+# Load data files
+df<- read_csv("bd_arsenic_data.csv")
+df.gh<- read_csv("bd_green_house.csv")
+```
+### Tasks
+1. Check the data structure with str() function
+```{r}
+str(df)
+```
+```{r}
+str(df.gh)
+```
+
+2. Check missing values if any.
+```{r}
+sum(is.na(df))
+sum(is.na(df.gh))
+```
+
+3. Create a summary statistics table with these variables: GAs, WAs, SAs, SPAs, SAoAs, SAoFe from arsenic data.
+```{r}
+summary(df$GAs) 
+```
+```{r}
+summary(df$WAs)
+
+```
+```{r}
+summary(df$SAs)
+
+```
+```{r}
+summary(df$SPAs)
+
+```
+```{r}
+summary(df$SAoAs)
+
+```
+```{r}
+summary(df$SAoFe)
+```
+
+4. Create a summary statistics by group (Landtype) using above mention variables.
+```{r}
+summary_stat <- df %>% 
+  # First select  numerical columns
+  dplyr::select(GAs, WAs, SAs, SPAs, SAoAs, SAoFe) %>%
+  # get summary statistics
+  dplyr::summarise_all(funs(Min = round(min(.),2), 
+                      Q25 = round(quantile(., 0.25),2), 
+                      Median = round(median(.),2), 
+                      Q75 = round(quantile(., 0.75),2), 
+                      Max = round(max(.),2),
+                      Mean = round(mean(.),2), 
+                      SD = round(sd(.),3))) %>% 
+                # create a nice looking table
+                tidyr::pivot_longer(everything(), 
+                            names_sep = "_", 
+                            names_to = c( "variable", ".value"))
+
+# Load library
+library(flextable)
+# Create a table
+flextable::flextable(summary_stat, theme_fun = theme_booktabs)
+```
+
+5. Create a histogram, density plot QQ-plot of Soil As (SAs) with ggplot2 package.
+```{r}
+ggplot(df, aes(SAs)) +
+  geom_histogram()+
+  # X-axis title
+  xlab("SAs") + 
+  # y-axis title
+  ylab("Frequency")+
+  # plot title
+  ggtitle("Histogram of Soil SAs")
+```
+```{r}
+ggplot(df, aes(SAs)) +
+  geom_density()+
+  # x-axis title
+  xlab("SAs") + 
+  # y-axis title
+  ylab("Density")+
+  # plot title
+  ggtitle("Kernel Density of Soil SAs")+
+    theme(
+    # Center the plot title
+    plot.title = element_text(hjust = 0.5))
+```
+```{r}
+ggplot(df, aes(sample = SAs)) +
+  stat_qq() + 
+  stat_qq_line() +
+  # x-axis title
+  xlab("Theoretical Quantiles)") + 
+  # y-axis title
+  ylab("Sample Quantiles")+
+  # plot title
+  ggtitle("Q-Q plot of Soil SOC from a Normal Distribution")+
+    theme(
+    # Center the plot title
+    plot.title = element_text(hjust = 0.5),
+    # x-axis title font size
+    axis.title.x = element_text(size = 14),
+    # y-axis title font size
+    axis.title.y = element_text(size = 14),)
+```
+
+6. Do normality test of WAs, SAs, GAs and measure the Skewness and Kurtosis of these variables.
+```{r}
+shapiro.test(df$WAs)
+```
+```{r}
+shapiro.test(df$SAs)
+```
+```{r}
+shapiro.test(df$GAs)
+```
+```{r}
+library(moments)
+moments::skewness(df$WAs)
+moments::kurtosis(df$WAs)
+```
+```{r}
+moments::skewness(df$SAs)
+moments::kurtosis(df$SAs)
+```
+```{r}
+moments::skewness(df$GAs)
+moments::kurtosis(df$GAs)
+```
+
+7. Create two scatter plots with ggplot2: i) WAs vs GAs and ii) SAs vs GAs, and show them side by side (p1+p2)
+```{r}
+p1<- ggplot(df, aes(x=WAs, y=GAs)) +
+  geom_point(size=2) +
+  # add plot title
+  ggtitle("Scatterplot of Soil WAs vs GAs") +
+   theme(
+    # center the plot title
+    plot.title = element_text(hjust = 0.5),
+    axis.line = element_line(colour = "gray"),
+    # axis title font size
+    axis.title.x = element_text(size = 14), 
+    # X and  axis font size
+    axis.text.y=element_text(size=12,vjust = 0.5, hjust=0.5),
+    axis.text.x = element_text(size=12))+
+     xlab("WAs") + 
+     ylab("Soil GAs")
+p1
+```
+```{r}
+p2<- ggplot(df, aes(x=SAs, y=GAs)) +
+  geom_point(size=2) +
+  # add plot title
+  ggtitle("Scatterplot of Soil SAs vs GAs") +
+   theme(
+    # center the plot title
+    plot.title = element_text(hjust = 0.5),
+    axis.line = element_line(colour = "red"),
+    # axis title font size
+    axis.title.x = element_text(size = 14), 
+    # X and  axis font size
+    axis.text.y=element_text(size=12,vjust = 0.5, hjust=0.5),
+    axis.text.x = element_text(size=12))+
+     xlab("SAs") + 
+     ylab("GAs")
+p2
+```
+```{r}
+p1+p2
+```
+
+8. Create a 3D bubble plot
+```{r}
+#conflicts_prefer(plyr::mutate)
+#conflicts_prefer(dplyr::arrange)
+df %>%
+  arrange(desc(SOC)) %>%
+  mutate(Land_type = factor(Land_type)) %>%
+  ggplot(aes(x=ELEV, y=SOC, size = SP, color=Land_type)) +
+    geom_point(alpha=0.5) +
+    scale_size(range = c(.2, 4), name="SP")+
+     guides(color = guide_legend(title = "Land_type"))+
+  ggtitle("Bubble Plot of Soil SOC vs ELEV") +
+   theme(
+    # center the plot title
+    plot.title = element_text(hjust = 0.5),
+    axis.line = element_line(colour = "gray"),
+    # axis title font size
+    axis.title.x = element_text(size = 14), 
+    # X and  axis font size
+    axis.text.y=element_text(size=12,vjust = 0.5, hjust=0.5),
+    axis.text.x = element_text(size=12))+
+      # add legend tittle
+  guides(color = guide_legend(title = "Land Type")) + 
+  xlab("ELEV") + 
+  ylab("Soil OC (mg/g)") 
+```
+
+9. Create a correlation matrix table showing significant levels. Use GAs, StAs, WAs, SAs, SPAs, SAoAs, ans SAoFe variables.
+```{r}
+#library(Hmisc)
+# create a data frame for correlation analysis
+df.cor<-df %>% dplyr::select(GAs, StAs, WAs, SAs, SPAs, SAoAs, SAoFe) 
+# correlation matrix
+cor.mat<-Hmisc::rcorr(as.matrix(df.cor, type="pearson"))
+cor.mat
+```
+```{r}
+# install.packages("xtable")
+library(xtable)
+
+cor_table <- function(x){ 
+  require(Hmisc) 
+  x <- as.matrix(x) 
+  R <- rcorr(x)$r 
+  p <- rcorr(x)$P 
+  
+  ## define notions for significance levels; spacing is important.
+  mystars <- ifelse(p < .001, "***", ifelse(p < .01, "** ", ifelse(p < .05, "* ", " ")))
+  
+  ## trunctuate the matrix that holds the correlations to three decimal
+  R <- format(round(cbind(rep(-1.11, ncol(x)), R), 3))[,-1] 
+  
+  ## build a new matrix that includes the correlations with their apropriate stars 
+  Rnew <- matrix(paste(R, mystars, sep=""), ncol=ncol(x)) 
+  diag(Rnew) <- paste(diag(R), " ", sep="") 
+  rownames(Rnew) <- colnames(x) 
+  colnames(Rnew) <- paste(colnames(x), "", sep="") 
+  
+  ## remove upper triangle
+  Rnew <- as.matrix(Rnew)
+  Rnew[upper.tri(Rnew, diag = TRUE)] <- ""
+  Rnew <- as.data.frame(Rnew) 
+  
+  ## remove last column and return the matrix (which is now a data frame)
+  Rnew <- cbind(Rnew[1:length(Rnew)-1])
+  return(Rnew) 
+}
+```
+```{r}
+cor_table(df.cor)
+```
+
+10. Create a Correlation matrix plot of above correlation analysis.
+```{r}
+# Load GGally library
+library(GGally)
+GGally::ggpairs(df.cor)
+```
+
+
+```{r}
+# Load corrplot library
+library(corrplot)
+# Create plot
+corrplot(cor.mat$r, 
+         type="upper", 
+         order="hclust", 
+         cex.lab = 0.5,
+         tl.col = "black",
+         p.mat = cor.mat$p, 
+         sig.level = 0.05, insig = "blank")
+```
+
+11. Use ggplot2 to create two barplots with error bar: i) GAs and Treatment II) GAs and varieties. And show them side by side. Use bd_green_house data
+```{r}
+# Standard error
+SE <- function(x){
+  sd(x)/sqrt(length(x))
+}
+```
+```{r}
+# Load library
+#library(plyr)
+# Get summary statistics
+summarise_GAs1<-ddply(df.gh,~Treatment, summarise, 
+                Mean= round(mean(GAs), 3),
+                Median=round (median(GAs), 3),
+                Min= round (min(GAs),3), 
+                Max= round (max(GAs),3), 
+                SD= round(sd(GAs), 3), 
+                SE= round (SE(GAs), 3))
+# Load library
+library(flextable)
+# Create a table
+flextable::flextable(summarise_GAs1, theme_fun = theme_booktabs)
+```
+
+```{r}
+#| warning: false
+#| error: false
+#| fig.width: 5
+#| fig.height: 4.5
+#| 
+p3 = ggplot(summarise_GAs1, aes(x=Treatment, y=Mean)) + 
+  geom_bar(stat="identity", position=position_dodge(),width=0.5, fill="yellow") +
+  geom_errorbar(aes(ymin=Mean-SE, ymax=Mean+SE), width=.2,
+   position=position_dodge(.9))+
+  # add y-axis title and x-axis title leave blank
+  labs(y="GAs", x = "")+ 
+  # add plot title
+  ggtitle("Mean ± SE of GAs")+
+  coord_flip()+
+  # customize plot themes
+  theme(
+        axis.line = element_line(colour = "gray"),
+        # plot title position at center
+        plot.title = element_text(hjust = 0.5),
+        # axis title font size
+        axis.title.x = element_text(size = 14), 
+        # X and  axis font size
+        axis.text.y=element_text(size=12,vjust = 0.5, hjust=0.5, colour='black'),
+        axis.text.x = element_text(size=12))
+p3
+```
+
+```{r}
+# Get summary statistics
+summarise_GAs2<-ddply(df.gh,~Variety, summarise, 
+                Mean= round(mean(GAs), 3),
+                Median=round (median(GAs), 3),
+                Min= round (min(GAs),3), 
+                Max= round (max(GAs),3), 
+                SD= round(sd(GAs), 3), 
+                SE= round (SE(GAs), 3))
+# Load library
+library(flextable)
+# Create a table
+flextable::flextable(summarise_GAs2, theme_fun = theme_booktabs)
+```
+
+
+```{r}
+p4 = ggplot(summarise_GAs2, aes(x=Variety, y=Mean)) + 
+  geom_bar(stat="identity", position=position_dodge(),width=0.5, fill="green") +
+  geom_errorbar(aes(ymin=Mean-SE, ymax=Mean+SE), width=.2,
+   position=position_dodge(.9))+
+  # add y-axis title and x-axis title leave blank
+  labs(y="GAs", x = "")+ 
+  # add plot title
+  ggtitle("Mean ± SE of GAs")+
+  coord_flip()+
+  # customize plot themes
+  theme(
+        axis.line = element_line(colour = "gray"),
+        # plot title position at center
+        plot.title = element_text(hjust = 0.5),
+        # axis title font size
+        axis.title.x = element_text(size = 14), 
+        # X and  axis font size
+        axis.text.y=element_text(size=12,vjust = 0.5, hjust=0.5, colour='black'),
+        axis.text.x = element_text(size=12))
+
+p4
+```
+
+```{r}
+p3+p4
+```
+
+12. Do t-test and show whether there is any significant difference in As concentration in rice (GAs) between low and high As soil treatments.
+```{r}
+# Create two dataframes
+T1 <- df.gh %>% dplyr::select(Treatment, GAs) %>%
+         filter(Treatment == "High As")
+
+T2 <- df.gh %>% dplyr::select(Treatment, GAs) %>%
+         filter(Treatment == "Low As")
+
+# Two-Sample T-test
+t.test(x=T1$GAs,
+       y=T2$GAs, 
+       paired = TRUE,
+       alternative = "greater")
+```
+
+13. Do one-way and two-way ANOVA show main effect of treatment and rice variety and their interaction on rice grain As and explain the results.
+```{r}
+anova.one=aov (GAs ~Treatment, data = df.gh) # analysis variance 
+anova (anova.one)
+```
+```{r}
+# Load library
+# library(report)
+report(anova.one)
+```
+Two-way ANOVA
+```{r}
+anova.two =aov (GAs ~Treatment + Variety+ Treatment:Variety, data = df.gh)
+anova (anova.two) 
+```
+```{r}
+# Load library
+# library(report)
+report(anova.two)
+```
+
+
+14. Do multiple comparison of two main effect.
+
+```{r}
+tukey <- TukeyHSD(anova.one)
+tukey
+```
+```{r}
+pairwise.t.test(df.gh$GAs, df.gh$Treatment,
+                 p.adjust.method = "bonferroni", 
+                 paired=FALSE)
+```
+```{r}
+pairwise.t.test(df.gh$GAs, df.gh$Variety,
+                 p.adjust.method = "bonferroni", 
+                 paired=FALSE)
+```
+
+
+```{r}
+# Load library
+#library(ggstatsplot)
+
+p1<-ggbetweenstats(
+  data = df.gh,
+  x = Treatment,
+  y = GAs,
+  ylab = "GAs",
+  type = "parametric", # ANOVA or Kruskal-Wallis
+  var.equal = TRUE, # ANOVA or Welch ANOVA
+  plot.type = "box",
+  pairwise.comparisons = TRUE,
+  pairwise.display = "significant",
+  centrality.plotting = FALSE,
+  bf.message = FALSE
+)+
+# add plot title
+ggtitle("Mian Effect of Treatment") +
+   theme(
+    # center the plot title
+    plot.title = element_text(hjust = 0.5),
+    axis.line = element_line(colour = "gray"),
+    # axis title font size
+    axis.title.x = element_text(size = 14), 
+    # X and  axis font size
+    axis.text.y=element_text(size=12,vjust = 0.5, hjust=0.5),
+    axis.text.x = element_text(size=12))
+print(p1)
+```
+
+
+```{r}
+# Load library
+library(ggstatsplot)
+
+p2<-ggbetweenstats(
+  data = df.gh,
+  x = Variety,
+  y = GAs,
+  ylab = "GAs",
+  type = "parametric", # ANOVA or Kruskal-Wallis
+  var.equal = TRUE, # ANOVA or Welch ANOVA
+  plot.type = "box",
+  pairwise.comparisons = TRUE,
+  pairwise.display = "significant",
+  centrality.plotting = FALSE,
+  bf.message = FALSE
+)+
+# add plot title
+ggtitle("Mian Effect of Variety") +
+   theme(
+    # center the plot title
+    plot.title = element_text(hjust = 0.5),
+    axis.line = element_line(colour = "gray"),
+    # axis title font size
+    axis.title.x = element_text(size = 14), 
+    # X and  axis font size
+    axis.text.y=element_text(size=12,vjust = 0.5, hjust=0.5),
+    axis.text.x = element_text(size=12))
+print(p2)
+```
+
+```{r}
+library(patchwork)
+p1+p2
+```
+
+
+
+
+
+
+
+
